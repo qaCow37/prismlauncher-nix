@@ -9,6 +9,8 @@ name = "prismgen"
 path = "prismgen/src/main.rs"
 
 [dependencies]
+itoa = "1.0"
+zmij = "1.0"
 reqwest        = {version = "0.13.4", features = ["json"]  }
 tokio          = {version = "1.52.3", features = ["full"]  }
 serde          = {version = "1.0"   , features = ["derive"]}

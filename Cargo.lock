@@ -858,10 +858,12 @@ name = "prismgen"
 version = "0.1.0"
 dependencies = [
  "clap",
+ "itoa",
  "lenient_semver",
  "reqwest",
  "serde",
  "tokio",
+ "zmij",
 ]
 
 [[package]]
