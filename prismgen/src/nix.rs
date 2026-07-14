@@ -18,7 +18,7 @@ impl std::fmt::Display for Error {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		match self {
 			Self::IO(err)         => err.fmt(f),
-			Self::NonPrimitiveKey => f.write_str("Non Primitive Key for Map Key"),
+			Self::NonPrimitiveKey => f.write_str("non primitive key in map"),
 			Self::Custom(str)     => f.write_str(str),
 		}
 	}
@@ -1078,7 +1078,7 @@ impl<'a> PrettyFormatter<'a> {
 	}
 
 	fn do_indent<W: io::Write>(&self, w: &mut W) -> Result<()> {
-		for i in 0..self.cur_idn {
+		for _ in 0..self.cur_idn {
 			w.write_all(self.idn_str)?;
 		}
 		Ok(())
