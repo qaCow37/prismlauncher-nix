@@ -74,8 +74,14 @@ impl CmdComponents {
 
 		let mut tasks = JoinSet::new();
 		let tasks_limit = Arc::new(Semaphore::new(64));
+		let mut file_index: usize = 0;
 
 		for pkg in mcpkgs {
+			use itoa::Buffer;
+			let mut filenamebuf = Buffer::new();
+			let filename = filenamebuf.format(file_index);
+			file_index += 1;
+
 			let vfabric     = index.get_latest_pkg_for_mc("net.fabricmc.fabric-loader", pkg.get_version());
 			let vquilt      = index.get_latest_pkg_for_mc("org.quiltmc.quilt-loader"  , pkg.get_version());
 			let vforge      = index.get_latest_pkg_for_mc("net.minecraftforge"        , pkg.get_version());
@@ -110,7 +116,7 @@ impl CmdComponents {
 			};
 			let path = {
 				let mut path = opath.to_path_buf();
-				path.push(pkg.get_version());
+				path.push(filename);
 				path.add_extension("nix");
 				path
 			};
@@ -126,7 +132,7 @@ impl CmdComponents {
 			});
 			write!(default_filebuf, "  \"{}\" = import ./{}.nix;\n",
 				pkg.get_version(),
-				pkg.get_version(),
+				filename,
 			)?;
 		}
 		default_filebuf.write_all(b"}")?;
