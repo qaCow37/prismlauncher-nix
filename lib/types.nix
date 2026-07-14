@@ -18,7 +18,7 @@ let
 		};
 		activation-fn = lib.types.functionTo activation;
 		package = lib.types.package;
-		
+
 		any-activation = lib.types.oneOf [
 			activation-fn
 			activation
@@ -34,7 +34,7 @@ let
 			package
 		];
 	};
-	
+
 	instance = lib.types.submodule {
 		options = {
 			config = {
@@ -43,7 +43,12 @@ let
 				};
 			};
 			components = lib.mkOption {
-				type = lib.types.listOf lib.types.anything;
+				type = lib.types.listOf (lib.types.mkOptionType {
+					name = "any-json-value-except-null";
+					description = "any JSON value except null";
+					check = v: v != null && (lib.types.json.check v);
+					merge = lib.types.anything.merge;
+				});
 				default = [];
 				description = "All the components to install into this instance";
 			};

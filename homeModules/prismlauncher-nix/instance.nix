@@ -54,9 +54,9 @@
 
 		file."${dst}/minecraft/" =
 		let
-			pkg = pkgs.callPackage prism-lib.pkgs.mkPack {
+			pkg = pkgs.callPackage prism-lib.pkgs.mkPackage {
 				name = "${name}-mcpack";
-				packages = resource.packages;
+				deps = resource.packages;
 			};
 		in
 		lib.mkIf ((builtins.length resource.packages) > 0)

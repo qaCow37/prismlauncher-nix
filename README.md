@@ -4,7 +4,6 @@ This flake is dedicated to install prismlauncher and create your prismlauncher i
 This flake is still under heavy development and not considered ready to use.
 
 ## TODO
-- [ ] HIGH PRIORITY: a nix devshell.
 - [ ] Implement all PrismLauncher instance options.
 - [x] PrismGen generate prismlauncher components.
 - [ ] PrismGen generate modrinth packages.

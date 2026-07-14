@@ -1,47 +1,42 @@
 {...}: rec {
-	mkPack = {stdenv, name, packages}: stdenv.mkDerivation
+	mkPackage = {stdenv, name, deps, src?null, dst?""}: stdenv.mkDerivation
 	{
 		name = name;
 		dontConfigure = true;
 		dontBuild = true;
 		dontUnpack = true;
-		buildInputs = packages;
-		installPhase = ''
-			mkdir -p "$out/minecraft/"
-			for dep in $buildInputs; do
-				cp -rsn $dep/minecraft/* "$out/minecraft/"
-			done
-		'';
-	};
-
-	mkFileResource = {stdenv, name, src, dst?""}: stdenv.mkDerivation
-	{
-		name = name;
-		dontConfigure = true;
-		dontBuild = true;
-		dontUnpack = true;
-		src = src;
-		installPhase = let o = "$out/minecraft/${dst}/"; in
+		buildInputs = deps;
+		installPhase = let o = "$out/minecraft/"; in
 		''
 			mkdir -p "${o}"
-			cp "$src" "${o}"
+			for dep in $buildInputs; do
+				cp -rsn $dep/minecraft/* "${o}"
+			done
+
+			${if src != null then
+			''
+				mkdir -p "${o}/${dst}/"
+				cp $src "${o}/${dst}/"
+			''
+			else ""}
 		'';
 	};
-	mkMod          = args: mkFileResource (args // {dst="mods";         });
-	mkResourcePack = args: mkFileResource (args // {dst="resourcepacks";});
-	mkShaderPack   = args: mkFileResource (args // {dst="shaderpacks";  });
+	mkMod          = args: mkPackage (args // {dst="mods";         });
+	mkResourcePack = args: mkPackage (args // {dst="resourcepacks";});
+	mkShaderPack   = args: mkPackage (args // {dst="shaderpacks";  });
 
 	mkModrinthPkg = {
 		stdenv,
 		fetchurl,
 		name,
+		deps,
 		projectid,
 		versionid,
 		filename,
 		hash,
 		dst,
-	}: mkFileResource {
-		inherit stdenv name dst;
+	}: mkPackage {
+		inherit stdenv name deps dst;
 		src = fetchurl {
 			url = "https://cdn.modrinth.com/data/${projectid}/versions/${versionid}/${filename}";
 			hash = hash;
