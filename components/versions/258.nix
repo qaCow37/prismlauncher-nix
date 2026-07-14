@@ -1,0 +1,1 @@
+{game={important=true;uid="net.minecraft";version="1.19.2";};fabric=null;quilt=null;forge={important=false;uid="net.minecraftforge";version="43.5.2";};neoforge=null;}
