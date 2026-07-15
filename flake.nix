@@ -45,6 +45,7 @@
 				packages = with pkgs; [
 					rustc
 					cargo
+					lldb
 				];
 			};
 		}

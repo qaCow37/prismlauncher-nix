@@ -1,6 +1,6 @@
 use reqwest::Client;
-use tokio::task::JoinSet;
-use std::collections::HashMap;
+use tokio::{task::JoinSet, time::error::Elapsed};
+use std::{collections::HashMap, ptr::eq};
 use crate::error::Result;
 
 struct Index {
@@ -46,26 +46,41 @@ impl Index {
 		Ok(Self {pkgs})
 	}
 
-	pub fn mcversion_of(&self, version: &PkgVersion) -> Option<String> {
+	pub fn mcversion_of_into(&self, version: &PkgVersion, res: &mut Vec<String>) {
 		for req in &version.requires {
 			if req.uid == "net.minecraft" {
 				if let Some(v) = &req.version {
-					return Some(v.clone());
+					// each require should be unique
+					res.push(v.clone());
+					return;
 				}
 			}
 		}
+
 		// run in two separate loops to prefer
 		// top level "net.minecraft" requires
 		for req in &version.requires {
+			// all requires already fetched so I skip
+			// error handling for not found require
 			if let Some(pkg) = self.pkgs.get(&req.uid) {
+				// what if require is bound to a specific version?
+				// fck you, i dont care!
 				for vers in &pkg.versions {
-					if let Some(v) = self.mcversion_of(vers) {
-						return Some(v);
-					}
+					self.mcversion_of_into(
+						vers,
+						res
+					);
 				}
 			}
 		}
-		None
+	}
+	pub fn mcversion_of(&self, version: &PkgVersion) -> Vec<String> {
+		let mut res = Vec::new();
+		self.mcversion_of_into(
+			version,
+			&mut res
+		);
+		res
 	}
 }
 
@@ -136,9 +151,6 @@ impl Package {
 	pub fn get_version(&self) -> &str {
 		self.version.as_str()
 	}
-	pub fn get_mc_version(&self) -> Option<&str> {
-		self.mc.as_deref()
-	}
 }
 
 impl PrismIndex {
@@ -149,14 +161,22 @@ impl PrismIndex {
 		for (uid, pkg) in &index.pkgs {
 			let mut versions = Vec::new();
 			for vers in &pkg.versions {
-				versions.push(Package {
-					version: vers.version.clone(),
-					mc: index.mcversion_of(vers),
-				});
+				let mcversions = index.mcversion_of(vers);
+				if mcversions.is_empty() {
+					versions.push(Package {
+						version: vers.version.clone(),
+						mc: None,
+					});
+				}
+				for mc in mcversions {
+					versions.push(Package {
+						version: vers.version.clone(),
+						mc: Some(mc),
+					});
+				}
 			}
 			pkgs.insert(uid.clone(), versions);
 		}
-
 		Ok(Self {pkgs})
 	}
 
